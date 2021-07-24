@@ -1,0 +1,11 @@
+{
+	"title"		:	"VRMod",
+	"type"		:	"tool",
+	"tags"		:	[ "realism" ],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}
