@@ -207,11 +207,18 @@ if CLIENT then
 
 elseif SERVER then
 	util.AddNetworkString("vrmod_doors")
-	
+	local validdoors = {
+	    ["prop_door_rotating"] = true,
+	    ["func_door_rotating"] = true,
+		["func_door"] = true,
+		["prop_testchamber_door"] = true
+	}
 	vrmod.NetReceiveLimited("vrmod_doors", 5, 32, function(len, ply)
 		local ent = net.ReadEntity()
-		if hook.Run("PlayerUse", ply, ent) ~= false then
-			ent:Use(ply)
+		if validdoors[ent:GetClass()] then
+			if hook.Run("PlayerUse", ply, ent) ~= false then
+				ent:Use(ply)
+			end
 		end
 	end)
 	
