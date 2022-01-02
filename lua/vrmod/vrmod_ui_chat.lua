@@ -121,7 +121,12 @@ if CLIENT then
 			end
 			button.OnMousePressed = function()
 				if i == 1 then
-					LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
+					if permissions and permissions.EnableVoiceChat then
+						permissions.EnableVoiceChat(not LocalPlayer():IsSpeaking())
+					else
+						LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
+					end
+					LocalPlayer():ConCommand( and "-voicerecord" or "+voicerecord")
 					timer.Simple(0.01,function()
 						chatPanel.button1:SetTextColor(LocalPlayer():IsSpeaking() and Color(0,255,0,255) or Color(255,0,0,255))
 					end)
