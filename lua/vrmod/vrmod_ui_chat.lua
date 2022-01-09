@@ -126,7 +126,7 @@ if CLIENT then
 					else
 						LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
 					end
-					LocalPlayer():ConCommand( and "-voicerecord" or "+voicerecord")
+					LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
 					timer.Simple(0.01,function()
 						chatPanel.button1:SetTextColor(LocalPlayer():IsSpeaking() and Color(0,255,0,255) or Color(255,0,0,255))
 					end)
