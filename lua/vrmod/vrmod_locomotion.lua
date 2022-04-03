@@ -11,6 +11,8 @@ if SERVER then
 			return
 		end
 		if hook.Run("VRMod_CanTeleport", ply, newpos) == false then return end
+		return true
+
 	end
 	vrmod.NetReceiveLimited("vrmod_teleport",2,200,function(len, ply)
 		local newpos = net.ReadVector()

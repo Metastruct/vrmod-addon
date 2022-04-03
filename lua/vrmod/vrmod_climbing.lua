@@ -1007,6 +1007,7 @@ elseif SERVER then
 		--	return
 		--end
 		if hook.Run("VRMod_CanTeleport", ply, newpos,"ladder") == false then return end
+		return true
 	end
 
 	vrmod.NetReceiveLimited("vrmod_ladderteleport",2,200,function(len, ply)
