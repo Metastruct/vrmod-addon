@@ -192,11 +192,18 @@ elseif SERVER then
 		end
 	end
 	
-	vrmod.NetReceiveLimited("vrmod_pickup",10,400,function(len, ply)
+	vrmod.NetReceiveLimited("vrmod_pickup",5,400,function(len, ply)
 		local bLeftHand = net.ReadBool()
 		local bDrop = net.ReadBool()
 		if not bDrop then
-			pickup(ply, bLeftHand, net.ReadVector(), net.ReadAngle())
+			local pos = net.ReadVector()
+			if not ply:TestPVS(pos) then
+				return
+			end
+			if ply:GetPos():Distance(pos) > 512 then
+				return
+			end
+			pickup(ply, bLeftHand, pos, net.ReadAngle())
 		else
 			drop(ply:SteamID(), bLeftHand, net.ReadVector(), net.ReadAngle(), net.ReadVector(), net.ReadVector())
 		end
@@ -206,6 +213,20 @@ elseif SERVER then
 	hook.Add("AllowPlayerPickup","vrmod",function(ply)
 		if g_VR[ply:SteamID()] ~= nil then
 			return false
+		end
+	end)
+
+	hook.Add("VRMod_Pickup","vrmod",function(ply,ent)
+		if not g_VR[ply:SteamID()] then
+			return false
+		end
+		
+		if not ply:TestPVS(ent) then
+			print(ply,"tried pickup",ent,"not in PVS")
+			return
+		end
+		if ply:GetPos():Distance(ent:GetPos())>1024 then
+			return
 		end
 	end)
 
