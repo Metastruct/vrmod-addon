@@ -8,12 +8,15 @@ if CLIENT then
 	local function toggleNametags()
 		nametags = not nametags
 		if nametags then
-			hook.Add( "PostDrawOpaqueRenderables", "vrutil_hook_nametags", function( depth, sky )
+			if hook.Run("VRMod_ToggleNametags",true,g_VR) ~= nil then return end
+			hook.Add( "PostDrawTranslucentRenderables", "vrutil_hook_nametags", function( depth, sky )
+				local g_VR = g_VR
 				if not g_VR.threePoints or depth or sky then return end
 				surface.SetFont("vrmod_Verdana37")
 				surface.SetDrawColor( 0, 0, 0, 128 )
+				local ep = EyePos()
 				for k,v in pairs(player.GetAll()) do
-					if v == LocalPlayer() or EyePos():DistToSqr(v:GetPos()) > 1000000 then continue end
+					if v == LocalPlayer() or ep:DistToSqr(v:GetPos()) > 1024^2 then continue end
 					local mtx = v:GetBoneMatrix(v:LookupBone("ValveBiped.Bip01_Head1") or -1)
 					local pos = mtx and mtx:GetTranslation()+Vector(0,0,15) or v:GetPos()+Vector(0,0,74)
 					cam.Start3D2D( pos, Angle(0,(g_VR.tracking.hmd.pos - v:GetPos()):Angle().yaw+90,90), 0.1 )
@@ -26,7 +29,8 @@ if CLIENT then
 				end
 			end )
 		else
-			hook.Remove( "PostDrawOpaqueRenderables", "vrutil_hook_nametags")
+			hook.Remove( "PostDrawTranslucentRenderables", "vrutil_hook_nametags")
+			hook.Run("VRMod_ToggleNametags",false)
 		end
 	end
 	
@@ -102,7 +106,7 @@ if CLIENT then
 		function chatPanel.playerlist:PerformLayout()
 			self:SetFontInternal( "HudSelectionText" )
 		end
-
+		
 		for i = 1,3 do
 			chatPanel["button"..i] = vgui.Create( "DLabel", chatPanel )
 			local button = chatPanel["button"..i]
