@@ -2,11 +2,33 @@
 local cv_allowtp = CreateConVar("vrmod_allow_teleport", "1", FCVAR_REPLICATED)
 if SERVER then 
 	util.AddNetworkString("vrmod_teleport")
-	vrmod.NetReceiveLimited("vrmod_teleport",10,200,function(len, ply)
-		if cv_allowtp:GetBool() and g_VR[ply:SteamID()] ~= nil and (hook.Run("PlayerNoClip", ply, true) == true or ULib and ULib.ucl.query( ply, "ulx noclip" ) == true) then
-			ply:SetPos(net.ReadVector())
+	local function checkTeleport(ply,newpos)
+		if not cv_allowtp:GetBool() then return end
+		if not g_VR[ply:SteamID()] then return end
+		if hook.Run("PlayerNoClip", ply, true) == false then return end -- TODO: implement trace based locomotion checking, HL:A Style
+
+		if ULib and ULib.ucl.query( ply, "ulx noclip" ) == false then
+			return
 		end
+		if hook.Run("VRMod_CanTeleport", ply, newpos) == false then return end
+		return true
+
+	end
+	vrmod.NetReceiveLimited("vrmod_teleport",2,200,function(len, ply)
+		local newpos = net.ReadVector()
+		if not checkTeleport(ply,newpos) then
+			ply:EmitSound'buttons/button10.wav'
+			ply:ChatPrint("Teleport location too far or not in world")
+			return
+		end
+		ply:SetPos(newpos)
 	end)
+	hook.Add("VRMod_CanTeleport", "vrmod",function( ply, pos )
+		if not ply:TestPVS(pos) then return false,'pvs too far' end
+		if not util.IsInWorld(pos) then return false,'not in world' end
+		if ply:GetPos():Distance(pos) > 2048 then return false,'distance too far' end
+	end)
+
 	return
 end
 local tpBeamMatrices, tpBeamEnt, tpBeamHitPos = {}, nil, nil
@@ -14,7 +36,8 @@ for i = 1,17 do tpBeamMatrices[i] = Matrix() end
 hook.Add("VRMod_Input","teleport",function( action, pressed )
 	if action == "boolean_chat" and not LocalPlayer():InVehicle() then
 		if pressed then
-			tpBeamEnt = ClientsideModel("models/vrmod/tpbeam.mdl")
+			local modelpath = file.Exists("models/vrmod/tpbeam.mdl",'GAME') and "models/vrmod/tpbeam.mdl" or "models/editor/playerstart.mdl"
+			tpBeamEnt = ClientsideModel(modelpath)
 			tpBeamEnt:SetRenderMode(RENDERMODE_TRANSCOLOR)
 			tpBeamEnt.RenderOverride = function(self)
 				render.SuppressEngineLighting(true)
@@ -64,7 +87,7 @@ hook.Add("VRMod_Input","teleport",function( action, pressed )
 				end
 			end)
 		else
-			tpBeamEnt:Remove()
+			if tpBeamEnt:IsValid() then tpBeamEnt:Remove() end
 			hook.Remove("VRMod_PreRender","teleport")
 			if tpBeamHitPos then
 				net.Start("vrmod_teleport") net.WriteVector(tpBeamHitPos) net.SendToServer()
@@ -72,8 +95,8 @@ hook.Add("VRMod_Input","teleport",function( action, pressed )
 		end
 	end
 end)
---******************************************************************************************************************************
 
+--******************************************************************************************************************************
 if SERVER then return end
 
 

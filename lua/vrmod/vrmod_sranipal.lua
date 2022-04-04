@@ -465,7 +465,10 @@ if CLIENT then
 	end)
 
 	hook.Add("VRMod_Exit","sranipal",function(ply,steamid)
-		ply.vrmod_flexsetup = nil
+		if IsValid(ply) then
+			ply.vrmod_flexsetup = nil
+		end
+			
 		flexSetups[steamid] = nil
 		local found = false
 		for k,v in pairs(flexSetups) do

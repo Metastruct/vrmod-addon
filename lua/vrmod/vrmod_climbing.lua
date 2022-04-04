@@ -960,6 +960,7 @@ elseif SERVER then
 	util.AddNetworkString("vrmod_ladderteleport")
 	util.AddNetworkString("vrmod_enableclimbing")
 	
+	--TODO: multiplayer ok? why?
 	local climbingEnabled = false
 	
 	hook.Add("AcceptInput","vrmod_ladders",function(ent, input, activator, caller, value)
@@ -996,9 +997,27 @@ elseif SERVER then
 		end
 	end)
 	
-	net.Receive("vrmod_ladderteleport",function(len, ply)
-		local pos = net.ReadVector()
-		ply:SetPos(pos)
+
+	-- TODO: combine with locomotion code
+	local function checkTeleport(ply,newpos)
+		if not g_VR[ply:SteamID()] then return end
+		--if hook.Run("PlayerNoClip", ply, true) == false then return end
+
+		--if ULib and ULib.ucl.query( ply, "ulx noclip" ) == false then
+		--	return
+		--end
+		if hook.Run("VRMod_CanTeleport", ply, newpos,"ladder") == false then return end
+		return true
+	end
+
+	vrmod.NetReceiveLimited("vrmod_ladderteleport",2,200,function(len, ply)
+		local newpos = net.ReadVector()
+		if not checkTeleport(ply,newpos) then
+			ply:EmitSound'buttons/button10.wav'
+			ply:ChatPrint("Teleport location too far or not in world")
+			return
+		end
+		ply:SetPos(newpos)
 	end)
 
 	concommand.Add("vrmod_ladderdebugdismounts", function( ply, cmd, args )
