@@ -214,7 +214,20 @@ elseif SERVER then
 		["prop_testchamber_door"] = true
 	}
 	vrmod.NetReceiveLimited("vrmod_doors", 5, 32, function(len, ply)
+		if not g_VR[ply:SteamID()] then
+			return
+		end
+
 		local ent = net.ReadEntity()
+		if not ply:TestPVS(ent) then
+			print(ply,"tried to use",ent,"not in PVS")
+			return
+		end
+
+		if ply:GetPos():Distance(ent:GetPos())>1024 then
+			return
+		end
+		
 		if validdoors[ent:GetClass()] then
 			if hook.Run("PlayerUse", ply, ent) ~= false then
 				ent:Use(ply)
