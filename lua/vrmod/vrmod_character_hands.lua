@@ -15,6 +15,10 @@ hook.Add("VRMod_Start","vrmod_starthandsonly",function(ply)
 	
 	hands = ClientsideModel("models/player/vr_hands.mdl")
 	hands:SetupBones()
+	if IsValid(g_VR.hands) then
+		SafeRemoveEntity(g_VR.hands)
+		ErrorNoHaltWithStack("FIXME: Hands already existings\n")
+	end
 	g_VR.hands = hands
 	
 	local leftHand = hands:LookupBone("ValveBiped.Bip01_L_Hand")
@@ -97,9 +101,15 @@ hook.Add("VRMod_Start","vrmod_starthandsonly",function(ply)
 end)
 
 hook.Add("VRMod_Exit","vrmod_stophandsonly",function(ply, steamid)
-	if IsValid(hands) then
-		hands:Remove()
-		LocalPlayer().RenderOverride = nil
+	if hands==g_VR.hands then
+		if IsValid(g_VR.hands) then
+			SafeRemoveEntity(g_VR.hands)
+		end
+	else
+		if IsValid(hands) then
+			hands:Remove()
+			LocalPlayer().RenderOverride = nil
+		end
 	end
 end)
 
