@@ -71,10 +71,11 @@ if CLIENT then
 			VRUtilMenuClose("chat")
 			return
 		end
+		local extra=100
 
 		chatPanel = vgui.Create( "DPanel" )
 		chatPanel:SetPos( 0, 0 )
-		chatPanel:SetSize( 600, 310 )
+		chatPanel:SetSize( 600+extra, 310 )
 		chatPanel:SetPaintedManually(true)
 		function chatPanel:Paint( w, h )
 			--surface.SetDrawColor( Color( 255, 0, 0, 255 ) )
@@ -86,25 +87,30 @@ if CLIENT then
 
 		chatPanel.chatbox = vgui.Create( "RichText", chatPanel )
 		chatPanel.chatbox:SetPos(0,0)
-		chatPanel.chatbox:SetSize(450,280)
+		chatPanel.chatbox:SetSize(450+extra,280)
 		function chatPanel.chatbox:PerformLayout()
 			self:SetFontInternal( "ChatFont" )
 			self:SetBGColor(0,0,0,128)
 		end
 
 		chatPanel.msgbar = vgui.Create( "DTextEntry", chatPanel )
-		chatPanel.msgbar:SetPos(0,255)
+		chatPanel.msgbar:SetPos(0,255+extra)
 		chatPanel.msgbar:SetSize(450,25)
 		chatPanel.msgbar:SetText("")
 		chatPanel.msgbar:SetFont("ChatFont")
 		chatPanel.msgbar:SetVisible(false)
 
 		chatPanel.playerlist = vgui.Create( "RichText", chatPanel )
-		chatPanel.playerlist:SetPos(450,0)
+		chatPanel.playerlist:SetPos(450+extra,0)
 		chatPanel.playerlist:SetSize(300,280)
 		chatPanel.playerlist:SetVerticalScrollbarEnabled(false)
 		function chatPanel.playerlist:PerformLayout()
 			self:SetFontInternal( "HudSelectionText" )
+		end
+		local pllistcol = Color( 0, 0, 0, 128 )
+		function chatPanel.playerlist:Paint(w,h)
+			surface.SetDrawColor( pllistcol )
+			surface.DrawRect(0,0,w,h)
 		end
 		
 		for i = 1,3 do
@@ -130,7 +136,6 @@ if CLIENT then
 					else
 						LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
 					end
-					LocalPlayer():ConCommand(LocalPlayer():IsSpeaking() and "-voicerecord" or "+voicerecord")
 					timer.Simple(0.01,function()
 						chatPanel.button1:SetTextColor(LocalPlayer():IsSpeaking() and Color(0,255,0,255) or Color(255,0,0,255))
 					end)
