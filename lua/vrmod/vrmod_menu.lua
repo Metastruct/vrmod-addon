@@ -7,7 +7,7 @@ surface.CreateFont( "vrmod_Trebuchet24", {
 } )
 
 local frame = nil
-
+local asked
 local function OpenMenu()
 	if IsValid(frame) then return frame end
 
@@ -77,6 +77,18 @@ local function OpenMenu()
 	tmp:DockMargin(0,5,5,0)
 	tmp:SetWide(96)
 	function tmp:DoClick()
+		if not asked and not permissions.IsGranted("voicerecord") then
+			asked=true
+			permissions.EnableVoiceChat(true)
+			timer.Create("vrmod_voice",0.1,0,function()
+				if permissions.IsGranted("voicerecord") then
+					permissions.EnableVoiceChat(false)
+					timer.Remove("vrmod_voice")
+					print("Running -voicerecord")
+				end
+			end)
+			return
+		end
 		frame:Remove()
 		if g_VR.active then
 			VRUtilClientExit()
