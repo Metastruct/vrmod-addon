@@ -248,7 +248,8 @@ if CLIENT then
 		
 		VRMOD_Shutdown() --in case we're retrying after an error and shutdown wasn't called
 		
-		if VRMOD_Init() == false then
+		local success, started = pcall(VRMOD_Init)
+		if success or not started then
 			print("vr init failed")
 			return
 		end
